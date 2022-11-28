@@ -165,6 +165,34 @@ namespace WissRech1
         {
             return x;
         }
+        private double[] hilbert(double[] x)
+        {
+            double[] y = new double[x.Length];
+            for (int i = 0; i < x.Length; i++)
+            {
+                double sum = 0;
+                for (int j = 0; j < x.Length; j++)
+                {
+                    sum += x[j] * 1 / (i + j + 1);
+                }
+                y[i] = sum;
+            }
+            return (y);
+        }
+
+
+
+        private double[] FE(double[] x)
+        {
+            double[] y = new double[x.Length];
+            for (int i = 1; i < x.Length - 1; i++)
+            {
+                y[i] = -x[i - 1] + 2 * x[i] - x[i + 1];
+            }
+            y[0] = 2 * x[0] - x[1];
+            y[x.Length - 1] = -x[x.Length - 2] + 2 * x[x.Length - 1];
+            return y;
+        }
     }
   
 }
