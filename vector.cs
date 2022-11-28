@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.Eventing.Reader;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -19,50 +21,77 @@ namespace WissRech1
         double tak, tbk;
         double fehler2;
         private int N;
-        public vector(int N)
-        {
-            this.N = N;
-            erstelle_vectorb();
-            erstelle_sol();
-            ausgabe();
-        }
-        public vector(int N, double[] b, double[] txk, double eps)
+        private int method = 0; //methode welche genommen werden soll 0=id 1=hilbert 2 = FE
+        private double eps = 0; //fehler abbruchbedingung
+      
+        public vector(int N, double[] b, double[] txk, double eps,int method,int iterationen)
         {
             this.N = N;
             this.b = b;
             this.txk = txk;
+            this.eps = eps;
+            this.method = method;
             erstelle_sol();
             erstelle_tdk();
             erstelle_trk();
             erstelle_xk1();
             erstelle_tzk();
+            switch (method)
+            {
+                default:
+                    break;
+                case 0:
+                    CG_method(identity, b, txk, iterationen,eps);
+                    break;
+                case 1:
+                    CG_method(hilbert, b, txk, iterationen, eps);
+                    break;
+                case 2:
+                    CG_method(FE, b, txk, iterationen, eps);
+                    break;
 
-            CG_method(identity, b, txk, 1, eps);
-            
+            }
+
+
             for (int h = 0; h < N; h++)
             {
-                sol[h]=txk[h];
-                Console.WriteLine(sol[h]);
+                sol[h] = txk[h];
+                Console.WriteLine(sol[h] + " , "+txk[h]);
             }
-            Console.WriteLine("Der Fehler beträgt: " + fehler2);
+            Console.WriteLine("Der Fehler beträgt: " + fehler2 + " für Methode; " + method);
 
         }
         private void erstelle_tzk()
         {
             tzk = new double[N];
+            for (int i = 0; i < N; i++)
+            {
+                tzk[i] = 0;
+            }
         }
         private void erstelle_xk1()
         {
             txk1 = new double[N];
+            for (int i = 0; i < N; i++)
+            {
+                txk1[i] = 0;
+            }
         }
         private void erstelle_tdk()
         {
             tdk = new double[N];
-
+            for (int i = 0; i < N; i++)
+            {
+                tdk[i] = 0;
+            }
         }
         private void erstelle_trk()
         {
             trk = new double[N];
+            for (int i = 0; i < N; i++)
+            {
+                trk[i] = 0;
+            }
         }
         /// <summary>
         /// 
@@ -76,17 +105,14 @@ namespace WissRech1
             erstelle_sol();
         }
 
-        private void erstelle_vectorb()
-        {
-            b = new double[N];
-            for (int i = 0; i < N; i++)
-            {
-                b[i] = 2;
-            }
-        }
+
         private void erstelle_sol()
         {
             sol = new double[N];
+            for(int i=0;i<N; i++)
+            {
+                sol[i] = 0;
+            }
         }
         private void ausgabe()
         {
@@ -97,7 +123,10 @@ namespace WissRech1
         }
         private void CG_method(Func<double[], double[]> matrix_vec, double[] b, double[] xk, int iterator, double eps)
         {
+            double sumrk = 0;
+            double sumzk = 0;
             double fehler = 0;
+            double sumrk2 = 0;
             int i = 0;
             do
             {
@@ -114,8 +143,8 @@ namespace WissRech1
                     }
                 }
                 tzk = matrix_vec(tdk);
-                double sumrk = 0;
-                double sumzk = 0;
+                sumrk = 0;
+                sumzk = 0;
                 fehler = 0;
                 for (int j = 0; j < N; j++)
                 {
@@ -132,7 +161,7 @@ namespace WissRech1
                 {
                     tak = sumrk / sumzk;
                 }
-                double sumrk2 = 0;
+                sumrk2 = 0;
                 for (int j = 0; j < N; j++)
                 {
                     txk[j] = txk[j] + tak * tdk[j];
@@ -154,7 +183,18 @@ namespace WissRech1
                 }
                
                 i++;
+                Console.WriteLine("Vektor in der iteration bal: " + i);
+                for(int j=0;j<N;j++)
+                {
+                    Console.WriteLine(txk[j]);
+                }
             } while (i < iterator && fehler > eps);
+            fehler = 0;
+            for (int j = 0; j < N; j++)
+            {
+                fehler = fehler + trk[j] * trk[j];
+            }
+            fehler = Math.Sqrt(fehler);
             this.fehler2 = fehler;
         }
     
@@ -167,17 +207,18 @@ namespace WissRech1
         }
         private double[] hilbert(double[] x)
         {
+            double sum = 0;
             double[] y = new double[x.Length];
             for (int i = 0; i < x.Length; i++)
             {
-                double sum = 0;
+                sum = 0;
                 for (int j = 0; j < x.Length; j++)
                 {
                     sum += x[j] * 1 / (i + j + 1);
                 }
                 y[i] = sum;
             }
-            return (y);
+            return y;
         }
 
 

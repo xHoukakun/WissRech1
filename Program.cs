@@ -20,10 +20,12 @@ namespace WissRech1
             for(int i = 0; i < N; i++)
             {
                 b[i] = 1;
-                txk[i] = Math.Pow(-1,i) *10000;
+                txk[i] = Math.Pow(-1,i)*i;
             }
-            vector mein_vector = new vector(N, b, txk, 0.01);
-
+           // vector mein_vector = new vector(N, b, txk, 0,0,N);    //0=id ,1 = hilber, 2=FE
+           // vector mein_vector2 = new vector(N, b, txk, 0, 1, N);
+           // vector mein_vector3 = new vector(N, b, txk, 0, 2, N);
+            vector mein_vector4=new vector(N, b, txk, 0, 1,100);
             Console.ReadKey();
             
 
